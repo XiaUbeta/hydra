@@ -33,6 +33,7 @@ services:
       - URLS_CONSENT=http://your-login-consent-app/consent
       - OAUTH2_CLIENT_REGISTRATION_DEFAULT_ENDPOINT=
       - LOG_LEVEL=debug
+      - POSTGRES_PASSWORD=POSTGRES_PASSWORD
     command: serve all --dangerous-force-http
 
 volumes:
