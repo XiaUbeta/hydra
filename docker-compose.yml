@@ -1,0 +1,42 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:13
+    ports:
+      - "5432"
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=hydra
+      - POSTGRES_DB=hydra
+    volumes:s
+      - hydra-db:/var/lib/postgresql/data
+
+  hydra-migrate:
+    depends_on:
+      - db
+    environment:
+      - DSN=postgres://hydra:${POSTGRES_PASSWORD}@db:5432/hydra?sslmode=disable
+    command: migrate sql -e --yes
+
+  hydra:
+    image: oryd/hydra:v2.3.0
+    depends_on:
+      - db
+      - hydra-migrate
+    ports:
+      - "4444:4444" 
+      # 管理端口 4445
+    environment:
+      - DSN=postgres://hydra:${POSTGRES_PASSWORD}@db:5432/hydra?sslmode=disable
+      - SECRETS_SYSTEM=${SECRETS_SYSTEM}
+      - URLS_SELF_ISSUER=http://your-app.dokploy.host/
+      - URLS_LOGIN=http://your-login-consent-app/login
+      - URLS_CONSENT=http://your-login-consent-app/consent
+      - OAUTH2_CLIENT_REGISTRATION_DEFAULT_ENDPOINT=
+      - LOG_LEVEL=debug
+    command: serve all --dangerous-force-http
+
+volumes:
+  hydra-db:
+    driver: local
